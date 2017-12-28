@@ -289,6 +289,12 @@ memcache_parse_req(struct msg *r)
                         break;
                     }
 
+                    if (str7cmp(m, 'v', 'e', 'r', 's', 'i', 'o', 'n')) {
+                        r->type = MSG_REQ_MC_VERSION;
+                        r->noforward = 1;
+                        break;
+                    }
+
                     break;
                 }
 
@@ -312,6 +318,7 @@ memcache_parse_req(struct msg *r)
                     break;
 
                 case MSG_REQ_MC_QUIT:
+                case MSG_REQ_MC_VERSION:
                     p = p - 1; /* go back by 1 byte */
                     state = SW_CRLF;
                     break;
@@ -1555,7 +1562,17 @@ memcache_add_auth(struct context *ctx, struct conn *c_conn, struct conn *s_conn)
 rstatus_t
 memcache_reply(struct msg *r)
 {
-    NOT_REACHED();
-    return NC_OK;
-}
+    struct conn *c_conn;
+    struct msg *response = r->peer;
 
+    ASSERT(response != NULL && response->owner != NULL);
+
+    c_conn = response->owner;
+    switch(r->type) {
+    case MSG_REQ_MC_VERSION:
+        return msg_append(response, (uint8_t *)"VERSION 1.0.0\r\n", 15);
+    default:
+        return NC_ERROR;
+    }
+    NOT_REACHED();
+}

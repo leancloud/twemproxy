@@ -307,6 +307,7 @@ msg_get(struct conn *conn, bool request, bool redis)
         }
         msg->add_auth = memcache_add_auth;
         msg->fragment = memcache_fragment;
+        msg->reply = memcache_reply;
         msg->failure = memcache_failure;
         msg->pre_coalesce = memcache_pre_coalesce;
         msg->post_coalesce = memcache_post_coalesce;
